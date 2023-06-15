@@ -189,6 +189,7 @@ def update_bug_in_jira(jira, bug, issue, assignees, user_map, status_map, dry_ru
         if not dry_run:
             fields = {"assignee": {"accountId": lp_state["assignee"]}}
             jira.transition_issue(issue, transition=status)
+            issue.update(fields=fields)
 
 def build_jira_issue(lp, bug, project_id, issue_type, assignee, component, opts=None):
     """Builds and return a dict to create a Jira Issue from"""
