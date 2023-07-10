@@ -176,20 +176,24 @@ def update_bug_in_jira(jira, bug, issue, assignees, user_map, status_map, dry_ru
     assignee, status = get_first_matching_assignee(bug, assignees)
     if status:
         status = status_map[status]
-    else:
-        # If no assignee maps, set issue to complete
-        status = "Done"
 
-    lp_state = { "assignee": user_map.get(assignee), "status": status }
+    lp_state = { "assignee": user_map.get(assignee, None), "status": status }
     jira_assignee = issue.fields.assignee.accountId if issue.fields.assignee else None
     jira_state = { "assignee": jira_assignee, "status": issue.fields.status.name }
 
-    if lp_state != jira_state:
-        print("Updating {} from {} -> {}".format(issue.key, jira_state, lp_state))
-        if not dry_run:
-            fields = {"assignee": {"accountId": lp_state["assignee"]}}
-            jira.transition_issue(issue, transition=status)
-            issue.update(fields=fields)
+    metas = ["status", "assignee"]
+    for meta in metas:
+        # Only change metafield if valid or mapped
+        if lp_state[meta] and (lp_state[meta] != jira_state[meta]):
+            print("Updating {} {} from {} -> {}".format(issue.key, meta, jira_state[meta], lp_state[meta]))
+
+            if not dry_run:
+                if meta == "status":
+                    jira.transition_issue(issue, transition=status)
+                elif meta == "assignee":
+                    fields = {"assignee": {"accountId": lp_state["assignee"]}}
+                    issue.update(fields=fields)
+
 
 def build_jira_issue(lp, bug, project_id, issue_type, assignee, component, opts=None):
     """Builds and return a dict to create a Jira Issue from"""
