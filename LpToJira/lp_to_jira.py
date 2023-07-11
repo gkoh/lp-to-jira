@@ -317,6 +317,7 @@ def main(args=None):
         help="The Launchpad numeric bug ID")
     opt_parser.add_argument(
         'project', type=str,
+        nargs='?',
         help="The JIRA project string key")
     opt_parser.add_argument(
         '-l',
@@ -403,9 +404,9 @@ def main(args=None):
 
     opts = opt_parser.parse_args(args)
 
-    if (opts.bug == 0 and not opts.sync_project_bugs):
+    if (opts.bug == 0 and not opts.sync_project_bugs and not opts.config):
         opt_parser.print_usage()
-        print('lp-to-jira: error: the follow argument is required: bug')
+        print('lp-to-jira: error: the follow argument is required: bug or config-json')
         return 1
 
     # Connect to Launchpad API
