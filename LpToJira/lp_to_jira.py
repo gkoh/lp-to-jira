@@ -160,20 +160,20 @@ def is_bug_in_jira(jira, bug, project_id):
     return False, None
 
 def get_first_matching_assignee(bug, assignees):
-    """Return the first assignee and status matching an entry in assignees"""
+    """Return the first assignee, status and milestone matching an entry in assignees"""
     if len(assignees) > 0:
         for serie in bug.bug_tasks:
             if serie.assignee and (serie.assignee.name in assignees):
-                return serie.assignee.name, serie.status
+                return serie.assignee.name, serie.status, serie.milestone
  
-    return None, None
+    return None, None, None
 
 
 
 def update_bug_in_jira(jira, bug, issue, assignees, user_map, status_map, dry_run=False):
     """Update Jira status fields from Launchpad Bug"""
 
-    assignee, status = get_first_matching_assignee(bug, assignees)
+    assignee, status, milestone = get_first_matching_assignee(bug, assignees)
     if status:
         status = status_map[status]
 
@@ -247,6 +247,8 @@ def lp_to_jira_bug(lp, jira, bug, sync, opts):
     assignee = None
     status = None
 
+    unassigned = bool(sync.get("unassigned", False))
+
     exists, issue = is_bug_in_jira(jira, bug, project_id)
     if exists:
         update_bug_in_jira(jira, bug, issue, assignees, opts.user_map, opts.status_map, opts.dry_run)
@@ -258,8 +260,11 @@ def lp_to_jira_bug(lp, jira, bug, sync, opts):
         # If no assignees specified, sync everything
         sync_to_jira = True
     else:
-        assignee, status = get_first_matching_assignee(bug, assignees)
-        sync_to_jira = True if assignee else False
+        assignee, status, milestone = get_first_matching_assignee(bug, assignees)
+        if assignee or unassigned:
+            sync_to_jira = True
+        else:
+            sync_to_jira = False
 
     if not sync_to_jira:
         return
