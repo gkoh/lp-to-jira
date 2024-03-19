@@ -206,7 +206,7 @@ def build_jira_issue(lp, bug, project_id, issue_type, assignee, component, opts=
         'project': project_id,
         'summary': 'LP#{} [{}] {}'.format(bug.id, bug_pkg, bug.title),
         'description': bug.description,
-        'assignee': { 'accountId': opts.user_map[assignee]},
+        'assignee': { 'accountId': opts.user_map[assignee] if assignee else None},
         'issuetype': {'name': issue_type}
     }
 
@@ -443,9 +443,6 @@ def main(args=None):
     elif opts.sync_project_bugs:
         sync_project = {"launchpad_project": opts.sync_project_bugs, "jira_project": opts.project, "assignees": None}
         opts.sync_project.append(sync_project)
-
-    # Ensure unassigned user maps
-    opts.user_map[None] = None
 
     if opts.merge_proposals:
         reviewers = list(opts.user_map.keys())
