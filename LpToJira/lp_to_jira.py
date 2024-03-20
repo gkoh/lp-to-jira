@@ -165,6 +165,10 @@ def get_first_matching_assignee(bug, assignees):
         for serie in bug.bug_tasks:
             if serie.assignee and (serie.assignee.name in assignees):
                 return serie.assignee.name, serie.status
+    else:
+        # If user_map is not defined. We still want to sync the status(first series) to JIRA
+        for serie in bug.bug_tasks:
+            return None, serie.status
  
     return None, None
 
