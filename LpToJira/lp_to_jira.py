@@ -100,8 +100,7 @@ def get_all_lp_project_bug_tasks(lp, project, days=None, tags=None):
             'In Progress',
             'Fix Committed',
             'Fix Released'
-        ],
-        tags=tags
+        ]
     )
 
     return bug_tasks
